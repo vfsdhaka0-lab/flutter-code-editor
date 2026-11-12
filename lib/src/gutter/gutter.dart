@@ -1,5 +1,6 @@
 
-// TODO(alexeyinkin): Remove when dropping support for Flutter < 3.10, https://github.com/akvelon/flutter-code-editor/issues/245
+// TODO(alexeyinkin): Remove when dropping support for Flutter < 3.10,
+// https://github.com/akvelon/flutter-code-editor/issues/245
 // ignore_for_file: unnecessary_non_null_assertion
 
 import 'package:flutter/material.dart';
@@ -29,11 +30,16 @@ class GutterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      controller: scrollController,
-      child: AnimatedBuilder(
-        animation: codeController,
-        builder: _buildOnChange,
+    // Apply the background to the complete visible gutter,
+    // not just the area occupied by the line numbers.
+    return Container(
+      color: style.background,
+      child: SingleChildScrollView(
+        controller: scrollController,
+        child: AnimatedBuilder(
+          animation: codeController,
+          builder: _buildOnChange,
+        ),
       ),
     );
   }
@@ -45,15 +51,15 @@ class GutterWidget extends StatelessWidget {
         (style.showErrors ? 0 : _issueColumnWidth) -
         (style.showFoldingHandles ? 0 : _foldingColumnWidth);
 
-    final issueColumnWidth = style.showErrors ? _issueColumnWidth : 0.0;
+    final issueColumnWidth =
+        style.showErrors ? _issueColumnWidth : 0.0;
+
     final foldingColumnWidth =
         style.showFoldingHandles ? _foldingColumnWidth : 0.0;
 
     final tableRows = List.generate(
       code.hiddenLineRanges.visibleLineNumbers.length,
-      // ignore: prefer_const_constructors
       (i) => TableRow(
-        // ignore: prefer_const_literals_to_create_immutables
         children: [
           const SizedBox(),
           const SizedBox(),
@@ -73,8 +79,8 @@ class GutterWidget extends StatelessWidget {
     }
 
     return Container(
-      color: style.background,
       width: style.showLineNumbers ? gutterWidth : null,
+      color: style.background,
       child: Table(
         columnWidths: {
           _lineNumberColumn: const FlexColumnWidth(),
@@ -117,10 +123,13 @@ class GutterWidget extends StatelessWidget {
         continue;
       }
 
-      tableRows[lineIndex].children![_issueColumn] = GutterErrorWidget(
+      tableRows[lineIndex].children![_issueColumn] =
+          GutterErrorWidget(
         issue,
         style.errorPopupTextStyle ??
-            (throw Exception('Error popup style should never be null')),
+            (throw Exception(
+              'Error popup style should never be null',
+            )),
       );
     }
   }
@@ -137,7 +146,8 @@ class GutterWidget extends StatelessWidget {
 
       final isFolded = code.foldedBlocks.contains(block);
 
-      tableRows[lineIndex].children![_foldingColumn] = FoldToggle(
+      tableRows[lineIndex].children![_foldingColumn] =
+          FoldToggle(
         color: style.textStyle?.color,
         isFolded: isFolded,
         onTap: isFolded
@@ -146,8 +156,8 @@ class GutterWidget extends StatelessWidget {
       );
     }
 
-    // Add folded blocks that are not considered as a valid foldable block,
-    // but should be folded because they were folded before becoming invalid.
+    // Preserve folded blocks that are no longer considered valid
+    // foldable blocks.
     for (final block in code.foldedBlocks) {
       final lineIndex = _lineIndexToTableRowIndex(block.firstLine);
 
@@ -155,7 +165,8 @@ class GutterWidget extends StatelessWidget {
         continue;
       }
 
-      tableRows[lineIndex].children![_foldingColumn] = FoldToggle(
+      tableRows[lineIndex].children![_foldingColumn] =
+          FoldToggle(
         color: style.textStyle?.color,
         isFolded: true,
         onTap: () => codeController.unfoldAt(block.firstLine),
@@ -164,6 +175,7 @@ class GutterWidget extends StatelessWidget {
   }
 
   int? _lineIndexToTableRowIndex(int line) {
-    return codeController.code.hiddenLineRanges.cutLineIndexIfVisible(line);
+    return codeController.code.hiddenLineRanges
+        .cutLineIndexIfVisible(line);
   }
 }
