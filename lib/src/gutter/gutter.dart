@@ -1,5 +1,5 @@
 
-// TODO(alexeyinkin): Remove when dropping support for Flutter < 3.10, https://github.com/akvelon/flutter-code-editor/issues/245
+ // TODO(alexeyinkin): Remove when dropping support for Flutter < 3.10, https://github.com/akvelon/flutter-code-editor/issues/245
 // ignore_for_file: unnecessary_non_null_assertion
 
 import 'package:flutter/material.dart';
@@ -27,21 +27,22 @@ class GutterWidget extends StatelessWidget {
   final CodeController codeController;
   final GutterStyle style;
   final ScrollController? scrollController;
-
-  /// Vertical spacing inside the gutter scroll area.
   final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       controller: scrollController,
-      child: Container(
-        color: style.background,
-        padding: padding,
-        child: AnimatedBuilder(
-          animation: codeController,
-          builder: _buildOnChange,
-        ),
+      padding: EdgeInsets.zero,
+      child: AnimatedBuilder(
+        animation: codeController,
+        builder: (context, child) {
+          return Container(
+            color: style.background,
+            padding: EdgeInsets.zero,
+            child: _buildOnChange(context, child),
+          );
+        },
       ),
     );
   }
