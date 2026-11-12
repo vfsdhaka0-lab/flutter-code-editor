@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class GutterStyle {
@@ -8,13 +9,6 @@ class GutterStyle {
   final TextAlign textAlign;
 
   /// Style of the numbers.
-  ///
-  /// [TextStyle.fontSize] and [TextStyle.fontFamily] are ignored
-  /// and taken from the widget style or [TextTheme.titleMedium] for consistency
-  /// with lines. Everything else applies.
-  ///
-  /// Of omitted, the widget or theme value is used with the color of
-  /// half the opacity.
   final TextStyle? textStyle;
 
   /// Style of the error popup.
@@ -23,23 +17,23 @@ class GutterStyle {
   /// Background of the line number column.
   final Color? background;
 
-  /// Central horizontal margin between the numbers and the code.
+  /// Horizontal margin between the gutter and code.
   final double margin;
 
-  /// Whether to show line numbers column.
+  /// Whether to show line numbers.
   final bool showLineNumbers;
 
-  /// Whether to show errors column.
+  /// Whether to show errors.
   final bool showErrors;
 
-  /// Whether to show folding handles column.
+  /// Whether to show folding handles.
   final bool showFoldingHandles;
 
-  /// Whether there is any column to show in gutter.
-  bool get showGutter => showLineNumbers || showErrors || showFoldingHandles;
+  bool get showGutter =>
+      showLineNumbers || showErrors || showFoldingHandles;
 
   const GutterStyle({
-    this.margin = 10.0,
+    this.margin = 0.0,
     this.textAlign = TextAlign.right,
     this.showErrors = true,
     this.showFoldingHandles = true,
@@ -50,10 +44,6 @@ class GutterStyle {
     this.textStyle,
   });
 
-  /// Hides the gutter entirely.
-  ///
-  /// Use this instead of all-`false` because new elements can be added
-  /// to the gutter in the future versions.
   static const GutterStyle none = GutterStyle(
     showErrors: false,
     showFoldingHandles: false,
@@ -63,14 +53,19 @@ class GutterStyle {
   GutterStyle copyWith({
     TextStyle? errorPopupTextStyle,
     TextStyle? textStyle,
+    Color? background,
+    double? margin,
+    double? width,
+    TextAlign? textAlign,
   }) =>
       GutterStyle(
-        width: width,
-        textAlign: textAlign,
+        width: width ?? this.width,
+        textAlign: textAlign ?? this.textAlign,
         textStyle: textStyle ?? this.textStyle,
-        errorPopupTextStyle: errorPopupTextStyle,
-        background: background,
-        margin: margin,
+        errorPopupTextStyle:
+            errorPopupTextStyle ?? this.errorPopupTextStyle,
+        background: background ?? this.background,
+        margin: margin ?? this.margin,
         showErrors: showErrors,
         showFoldingHandles: showFoldingHandles,
         showLineNumbers: showLineNumbers,
