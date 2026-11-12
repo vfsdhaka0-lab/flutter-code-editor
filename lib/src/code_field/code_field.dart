@@ -1,3 +1,4 @@
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -19,6 +20,8 @@ import 'actions/tab.dart';
 import 'code_controller.dart';
 import 'default_styles.dart';
 import 'js_workarounds/js_workarounds.dart';
+
+const double _codeRightPadding = 12.0;
 
 final _shortcuts = <ShortcutActivator, Intent>{
   // Copy
@@ -133,7 +136,7 @@ class CodeField extends StatefulWidget {
   final bool wrap;
 
   /// A CodeController instance to apply
-  /// language highlight, themeing and modifiers.
+  /// language highlight, theming and modifiers.
   final CodeController controller;
 
   /// An UndoHistoryController instance
@@ -155,7 +158,7 @@ class CodeField extends StatefulWidget {
   /// {@macro flutter.widgets.textField.smartQuotesType}
   final SmartQuotesType smartQuotesType;
 
-  /// A way to replace specific line numbers by a custom TextSpan
+  /// A way to replace specific line numbers by a custom TextSpan.
   final TextSpan Function(int, TextStyle?)? lineNumberBuilder;
 
   /// {@macro flutter.widgets.textField.enabled}
@@ -166,8 +169,8 @@ class CodeField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.readOnly}
   ///
-  /// This is just passed as a parameter to a [TextField].
-  /// See also [CodeController.readOnly].
+  /// This is just passed as a parameter to a TextField.
+  /// See also CodeController.readOnly.
   final bool readOnly;
 
   final Color? background;
@@ -194,7 +197,7 @@ class CodeField extends StatefulWidget {
     this.textStyle,
     this.smartDashesType = SmartDashesType.disabled,
     this.smartQuotesType = SmartQuotesType.disabled,
-    this.padding = EdgeInsets.zero,
+    this.padding = const EdgeInsets.only(right: _codeRightPadding),
     GutterStyle? gutterStyle,
     this.enabled,
     this.readOnly = false,
@@ -207,9 +210,10 @@ class CodeField extends StatefulWidget {
     @Deprecated('Use gutterStyle instead')
     this.lineNumberStyle = const GutterStyle(),
   })  : assert(
-            gutterStyle == null || lineNumbers == null,
-            'Can not provide gutterStyle and lineNumbers at the same time. '
-            'Please use gutterStyle and provide necessary columns to show/hide'),
+          gutterStyle == null || lineNumbers == null,
+          'Can not provide gutterStyle and lineNumbers at the same time. '
+              'Please use gutterStyle and provide necessary columns to show/hide',
+        ),
         gutterStyle = gutterStyle ??
             ((lineNumbers == false) ? GutterStyle.none : lineNumberStyle);
 
@@ -218,24 +222,30 @@ class CodeField extends StatefulWidget {
 }
 
 class _CodeFieldState extends State<CodeField> {
-  // Add a controller
+  // Add a controller.
   LinkedScrollControllerGroup? _controllers;
   ScrollController? _numberScroll;
   ScrollController? _codeScroll;
   ScrollController? _horizontalCodeScroll;
+
   final _codeFieldKey = GlobalKey();
 
   OverlayEntry? _suggestionsPopup;
   OverlayEntry? _searchPopup;
+
   Offset _normalPopupOffset = Offset.zero;
   Offset _flippedPopupOffset = Offset.zero;
+
   double painterWidth = 0;
   double painterHeight = 0;
 
   FocusNode? _focusNode;
+
   String? lines;
   String longestLine = '';
+
   Size? windowSize;
+
   late TextStyle textStyle;
   Color? _backgroundCol;
 
@@ -245,6 +255,7 @@ class _CodeFieldState extends State<CodeField> {
   @override
   void initState() {
     super.initState();
+
     _controllers = LinkedScrollControllerGroup();
     _numberScroll = _controllers?.addAndGet();
     _codeScroll = _controllers?.addAndGet();
@@ -255,13 +266,15 @@ class _CodeFieldState extends State<CodeField> {
     widget.controller.searchController.addListener(
       _onSearchControllerChange,
     );
+
     _horizontalCodeScroll = ScrollController();
+
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode!.attach(context, onKeyEvent: _onKeyEvent);
 
     widget.controller.searchController.codeFieldFocusNode = _focusNode;
 
-    // Workaround for disabling spellchecks in FireFox
+    // Workaround for disabling spellchecks in FireFox.
     // https://github.com/akvelon/flutter-code-editor/issues/197
     disableSpellCheckIfWeb();
 
@@ -269,10 +282,13 @@ class _CodeFieldState extends State<CodeField> {
       if (!mounted) {
         return;
       }
+
       final double width = _codeFieldKey.currentContext!.size!.width;
       final double height = _codeFieldKey.currentContext!.size!.height;
+
       windowSize = Size(width, height);
     });
+
     _onTextChanged();
   }
 
@@ -283,35 +299,54 @@ class _CodeFieldState extends State<CodeField> {
   @override
   void dispose() {
     widget.controller.searchController.codeFieldFocusNode = null;
+
     widget.controller.removeListener(_onTextChanged);
     widget.controller.removeListener(_updatePopupOffset);
-    widget.controller.popupController.removeListener(_onPopupStateChanged);
+
+    widget.controller.popupController.removeListener(
+      _onPopupStateChanged,
+    );
+
     _suggestionsPopup?.remove();
+
     widget.controller.searchController.removeListener(
       _onSearchControllerChange,
     );
+
     _searchPopup?.remove();
     _searchPopup = null;
+
     _numberScroll?.dispose();
     _codeScroll?.dispose();
     _horizontalCodeScroll?.dispose();
+
     super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant CodeField oldWidget) {
     super.didUpdateWidget(oldWidget);
+
     oldWidget.controller.removeListener(_onTextChanged);
     oldWidget.controller.removeListener(_updatePopupOffset);
-    oldWidget.controller.popupController.removeListener(_onPopupStateChanged);
+
+    oldWidget.controller.popupController.removeListener(
+      _onPopupStateChanged,
+    );
+
     oldWidget.controller.searchController.removeListener(
       _onSearchControllerChange,
     );
 
     widget.controller.searchController.codeFieldFocusNode = _focusNode;
+
     widget.controller.addListener(_onTextChanged);
     widget.controller.addListener(_updatePopupOffset);
-    widget.controller.popupController.addListener(_onPopupStateChanged);
+
+    widget.controller.popupController.addListener(
+      _onPopupStateChanged,
+    );
+
     widget.controller.searchController.addListener(
       _onSearchControllerChange,
     );
@@ -323,12 +358,15 @@ class _CodeFieldState extends State<CodeField> {
         if (!mounted) {
           return;
         }
-        // For some reason _codeFieldKey.currentContext is null in tests
+
+        // For some reason _codeFieldKey.currentContext is null in tests,
         // so check first.
         final context = _codeFieldKey.currentContext;
+
         if (context != null) {
           final double width = context.size!.width;
           final double height = context.size!.height;
+
           windowSize = Size(width, height);
         }
       });
@@ -336,7 +374,7 @@ class _CodeFieldState extends State<CodeField> {
   }
 
   void _onTextChanged() {
-    // Rebuild line number
+    // Rebuild line numbers.
     final str = widget.controller.text.split('\n');
     final buf = <String>[];
 
@@ -344,15 +382,21 @@ class _CodeFieldState extends State<CodeField> {
       buf.add((k + 1).toString());
     }
 
-    // Find longest line
+    // Find longest line.
     longestLine = '';
+
     widget.controller.text.split('\n').forEach((line) {
-      if (line.length > longestLine.length) longestLine = line;
+      if (line.length > longestLine.length) {
+        longestLine = line;
+      }
     });
 
     if (_codeScroll != null && _editorKey.currentContext != null) {
-      final box = _editorKey.currentContext!.findRenderObject() as RenderBox?;
+      final box =
+          _editorKey.currentContext!.findRenderObject() as RenderBox?;
+
       _editorOffset = box?.localToGlobal(Offset.zero);
+
       if (_editorOffset != null) {
         var fixedOffset = _editorOffset!;
         fixedOffset += Offset(0, _codeScroll!.offset);
@@ -363,7 +407,7 @@ class _CodeFieldState extends State<CodeField> {
     rebuild();
   }
 
-  // Wrap the codeField in a horizontal scrollView
+  // Wrap the codeField in a horizontal scrollView.
   Widget _wrapInScrollView(
     Widget codeField,
     TextStyle textStyle,
@@ -380,9 +424,14 @@ class _CodeFieldState extends State<CodeField> {
               minWidth: minWidth,
             ),
             child: Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Text(longestLine, style: textStyle),
-            ), // Add extra padding
+              padding: EdgeInsets.only(
+                right: widget.padding.right,
+              ),
+              child: Text(
+                longestLine,
+                style: textStyle,
+              ),
+            ),
           ),
           widget.expands ? Expanded(child: codeField) : codeField,
         ],
@@ -401,11 +450,12 @@ class _CodeFieldState extends State<CodeField> {
 
   @override
   Widget build(BuildContext context) {
-    // Default color scheme
+    // Default color scheme.
     const rootKey = 'root';
 
     final themeData = Theme.of(context);
     final styles = CodeTheme.of(context)?.styles;
+
     _backgroundCol = widget.background ??
         styles?[rootKey]?.backgroundColor ??
         DefaultStyles.backgroundColor;
@@ -434,9 +484,11 @@ class _CodeFieldState extends State<CodeField> {
       maxLines: widget.maxLines,
       expands: widget.expands,
       scrollController: _codeScroll,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         isCollapsed: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 16),
+        contentPadding: EdgeInsets.only(
+          right: widget.padding.right,
+        ),
         disabledBorder: InputBorder.none,
         border: InputBorder.none,
         focusedBorder: InputBorder.none,
@@ -455,8 +507,12 @@ class _CodeFieldState extends State<CodeField> {
       ),
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          // Control horizontal scrolling
-          return _wrapInScrollView(codeField, textStyle, constraints.maxWidth);
+          // Control horizontal scrolling.
+          return _wrapInScrollView(
+            codeField,
+            textStyle,
+            constraints.maxWidth,
+          );
         },
       ),
     );
@@ -468,12 +524,14 @@ class _CodeFieldState extends State<CodeField> {
         decoration: widget.decoration,
         color: _backgroundCol,
         key: _codeFieldKey,
-        padding: const EdgeInsets.only(left: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (widget.gutterStyle.showGutter) _buildGutter(),
-            Expanded(key: _editorKey, child: editingField),
+            Expanded(
+              key: _editorKey,
+              child: editingField,
+            ),
           ],
         ),
       ),
@@ -482,8 +540,9 @@ class _CodeFieldState extends State<CodeField> {
 
   Widget _buildGutter() {
     final lineNumberSize = textStyle.fontSize;
-    final lineNumberColor =
-        widget.gutterStyle.textStyle?.color ?? textStyle.color?.withOpacity(.5);
+
+    final lineNumberColor = widget.gutterStyle.textStyle?.color ??
+        textStyle.color?.withOpacity(.5);
 
     final lineNumberTextStyle =
         (widget.gutterStyle.textStyle ?? textStyle).copyWith(
@@ -515,9 +574,16 @@ class _CodeFieldState extends State<CodeField> {
     final caretHeight = _getCaretHeight(textPainter);
 
     final leftOffset = _getPopupLeftOffset(textPainter);
-    final normalTopOffset = _getPopupTopOffset(textPainter, caretHeight);
+
+    final normalTopOffset = _getPopupTopOffset(
+      textPainter,
+      caretHeight,
+    );
+
     final flippedTopOffset = normalTopOffset -
-        (Sizes.autocompletePopupMaxHeight + caretHeight + Sizes.caretPadding);
+        (Sizes.autocompletePopupMaxHeight +
+            caretHeight +
+            Sizes.caretPadding);
 
     setState(() {
       _normalPopupOffset = Offset(leftOffset, normalTopOffset);
@@ -528,7 +594,10 @@ class _CodeFieldState extends State<CodeField> {
   TextPainter _getTextPainter(String text) {
     return TextPainter(
       textDirection: TextDirection.ltr,
-      text: TextSpan(text: text, style: textStyle),
+      text: TextSpan(
+        text: text,
+        style: textStyle,
+      ),
     )..layout();
   }
 
@@ -544,6 +613,7 @@ class _CodeFieldState extends State<CodeField> {
       widget.controller.selection.base,
       Rect.zero,
     );
+
     return caretFullHeight ?? 0;
   }
 
@@ -557,11 +627,13 @@ class _CodeFieldState extends State<CodeField> {
     );
   }
 
-  double _getPopupTopOffset(TextPainter textPainter, double caretHeight) {
+  double _getPopupTopOffset(
+    TextPainter textPainter,
+    double caretHeight,
+  ) {
     return max(
       _getCaretOffset(textPainter).dy +
           caretHeight +
-          16 +
           widget.padding.top -
           _codeScroll!.offset +
           (_editorOffset?.dy ?? 0),
@@ -572,6 +644,7 @@ class _CodeFieldState extends State<CodeField> {
   void _onPopupStateChanged() {
     final shouldShow =
         widget.controller.popupController.shouldShow && windowSize != null;
+
     if (!shouldShow) {
       _suggestionsPopup?.remove();
       _suggestionsPopup = null;
@@ -603,7 +676,10 @@ class _CodeFieldState extends State<CodeField> {
 
   OverlayEntry _buildSearchOverlay() {
     final colorScheme = Theme.of(context).colorScheme;
-    final borderColor = _getTextColorFromTheme() ?? colorScheme.onBackground;
+
+    final borderColor =
+        _getTextColorFromTheme() ?? colorScheme.onBackground;
+
     return OverlayEntry(
       builder: (context) {
         return Positioned(
