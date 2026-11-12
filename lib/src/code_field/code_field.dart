@@ -143,7 +143,7 @@ class CodeField extends StatefulWidget {
 
   /// {@macro flutter.widgets.textField.maxLInes}
   final int? maxLines;
-  
+
   /// {@macro flutter.widgets.textField.expands}
   final bool expands;
 
@@ -514,6 +514,8 @@ class _CodeFieldState extends State<CodeField> {
       decoration: InputDecoration(
         isCollapsed: true,
         contentPadding: EdgeInsets.only(
+          top: _editorVerticalPadding,
+          bottom: _editorVerticalPadding,
           right: widget.padding.right,
         ),
         disabledBorder: InputBorder.none,
@@ -562,12 +564,7 @@ class _CodeFieldState extends State<CodeField> {
 
             Expanded(
               key: _editorKey,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: _editorVerticalPadding,
-                ),
-                child: editingField,
-              ),
+              child: editingField,
             ),
           ],
         ),
