@@ -23,10 +23,8 @@ import 'default_styles.dart';
 import 'js_workarounds/js_workarounds.dart';
 
 const double _codeRightPadding = 12.0;
-const double _editorVerticalPadding = 12.0;
 
 final _shortcuts = <ShortcutActivator, Intent>{
-  // Copy
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.keyC,
@@ -40,7 +38,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
     LogicalKeyboardKey.insert,
   ): CopySelectionTextIntent.copy,
 
-  // Cut
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.keyX,
@@ -60,7 +57,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
     SelectionChangedCause.keyboard,
   ),
 
-  // Undo
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.keyZ,
@@ -74,7 +70,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
     SelectionChangedCause.keyboard,
   ),
 
-  // Redo
   LogicalKeySet(
     LogicalKeyboardKey.shift,
     LogicalKeyboardKey.control,
@@ -90,18 +85,14 @@ final _shortcuts = <ShortcutActivator, Intent>{
     SelectionChangedCause.keyboard,
   ),
 
-  // Indent
   LogicalKeySet(
     LogicalKeyboardKey.tab,
   ): const IndentIntent(),
-
-  // Outdent
   LogicalKeySet(
     LogicalKeyboardKey.shift,
     LogicalKeyboardKey.tab,
   ): const OutdentIntent(),
 
-  // Comment Uncomment
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.slash,
@@ -111,7 +102,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
     meta: true,
   ): const CommentUncommentIntent(),
 
-  // Search
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.keyF,
@@ -121,74 +111,38 @@ final _shortcuts = <ShortcutActivator, Intent>{
     meta: true,
   ): const SearchIntent(),
 
-  // Dismiss
   LogicalKeySet(
     LogicalKeyboardKey.escape,
   ): const DismissIntent(),
 
-  // EnterKey
   LogicalKeySet(
     LogicalKeyboardKey.enter,
   ): const EnterKeyIntent(),
 
-  // TabKey
   LogicalKeySet(
     LogicalKeyboardKey.tab,
   ): const TabKeyIntent(),
 };
 
 class CodeField extends StatefulWidget {
-  /// {@macro flutter.widgets.textField.minLines}
   final int? minLines;
-
-  /// {@macro flutter.widgets.textField.maxLInes}
   final int? maxLines;
-
-  /// {@macro flutter.widgets.textField.expands}
   final bool expands;
-
-  /// Whether overflowing lines should wrap around
-  /// or make the field scrollable horizontally.
   final bool wrap;
-
-  /// A CodeController instance to apply
-  /// language highlight, theming and modifiers.
   final CodeController controller;
-
-  /// An UndoHistoryController instance
-  /// to control TextField history.
   final UndoHistoryController? undoController;
 
   @Deprecated('Use gutterStyle instead')
   final GutterStyle lineNumberStyle;
 
-  /// {@macro flutter.widgets.textField.cursorColor}
   final Color? cursorColor;
-
-  /// {@macro flutter.widgets.textField.textStyle}
   final TextStyle? textStyle;
-
-  /// {@macro flutter.widgets.textField.smartDashesType}
   final SmartDashesType smartDashesType;
-
-  /// {@macro flutter.widgets.textField.smartQuotesType}
   final SmartQuotesType smartQuotesType;
-
-  /// A way to replace specific line numbers by a custom TextSpan.
   final TextSpan Function(int, TextStyle?)? lineNumberBuilder;
-
-  /// {@macro flutter.widgets.textField.enabled}
   final bool? enabled;
-
-  /// {@macro flutter.widgets.editableText.onChanged}
   final void Function(String)? onChanged;
-
-  /// {@macro flutter.widgets.editableText.readOnly}
-  ///
-  /// This is just passed as a parameter to a TextField.
-  /// See also CodeController.readOnly.
   final bool readOnly;
-
   final Color? background;
   final EdgeInsets padding;
   final Decoration? decoration;
@@ -296,21 +250,18 @@ class _CodeFieldState extends State<CodeField> {
     widget.controller.searchController.codeFieldFocusNode =
         _focusNode;
 
-    // Workaround for disabling spellchecks in FireFox.
-    // https://github.com/akvelon/flutter-code-editor/issues/197
     disableSpellCheckIfWeb();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
-      final double width =
-          _codeFieldKey.currentContext!.size!.width;
-      final double height =
-          _codeFieldKey.currentContext!.size!.height;
+      final context = _codeFieldKey.currentContext;
+      if (context == null || context.size == null) return;
 
-      windowSize = Size(width, height);
+      windowSize = Size(
+        context.size!.width,
+        context.size!.height,
+      );
     });
 
     _onTextChanged();
@@ -335,18 +286,21 @@ class _CodeFieldState extends State<CodeField> {
       _onPopupStateChanged,
     );
 
-    _suggestionsPopup?.remove();
-
     widget.controller.searchController.removeListener(
       _onSearchControllerChange,
     );
 
+    _suggestionsPopup?.remove();
     _searchPopup?.remove();
     _searchPopup = null;
 
     _numberScroll?.dispose();
     _codeScroll?.dispose();
     _horizontalCodeScroll?.dispose();
+
+    if (widget.focusNode == null) {
+      _focusNode?.dispose();
+    }
 
     super.dispose();
   }
@@ -384,18 +338,15 @@ class _CodeFieldState extends State<CodeField> {
   void rebuild() {
     setState(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
+        if (!mounted) return;
 
         final context = _codeFieldKey.currentContext;
+        if (context == null || context.size == null) return;
 
-        if (context != null) {
-          final double width = context.size!.width;
-          final double height = context.size!.height;
-
-          windowSize = Size(width, height);
-        }
+        windowSize = Size(
+          context.size!.width,
+          context.size!.height,
+        );
       });
     });
   }
@@ -448,14 +399,9 @@ class _CodeFieldState extends State<CodeField> {
               maxHeight: 0,
               minWidth: minWidth,
             ),
-            child: Padding(
-              padding: EdgeInsets.only(
-                right: widget.padding.right,
-              ),
-              child: Text(
-                longestLine,
-                style: textStyle,
-              ),
+            child: Text(
+              longestLine,
+              style: textStyle,
             ),
           ),
           widget.expands
@@ -501,7 +447,7 @@ class _CodeFieldState extends State<CodeField> {
 
     final codeField = TextField(
       focusNode: _focusNode,
-      scrollPadding: widget.padding,
+      scrollPadding: EdgeInsets.zero,
       style: textStyle,
       smartDashesType: widget.smartDashesType,
       smartQuotesType: widget.smartQuotesType,
@@ -511,16 +457,15 @@ class _CodeFieldState extends State<CodeField> {
       maxLines: widget.maxLines,
       expands: widget.expands,
       scrollController: _codeScroll,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         isCollapsed: true,
-        contentPadding: EdgeInsets.only(
-          top: _editorVerticalPadding,
-          bottom: _editorVerticalPadding,
-          right: widget.padding.right,
-        ),
+        contentPadding: EdgeInsets.zero,
         disabledBorder: InputBorder.none,
         border: InputBorder.none,
         focusedBorder: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
       ),
       cursorColor: widget.cursorColor ??
           defaultTextStyle.color,
@@ -603,9 +548,7 @@ class _CodeFieldState extends State<CodeField> {
       codeController: widget.controller,
       style: gutterStyle,
       scrollController: _numberScroll,
-      padding: const EdgeInsets.symmetric(
-        vertical: _editorVerticalPadding,
-      ),
+      padding: EdgeInsets.zero,
     );
   }
 
@@ -668,8 +611,7 @@ class _CodeFieldState extends State<CodeField> {
 
   double _getPopupLeftOffset(TextPainter textPainter) {
     return max(
-      _getCaretOffset(textPainter).dx +
-          widget.padding.left -
+      _getCaretOffset(textPainter).dx -
           _horizontalCodeScroll!.offset +
           (_editorOffset?.dx ?? 0),
       0,
@@ -682,8 +624,7 @@ class _CodeFieldState extends State<CodeField> {
   ) {
     return max(
       _getCaretOffset(textPainter).dy +
-          caretHeight +
-          widget.padding.top -
+          caretHeight -
           _codeScroll!.offset +
           (_editorOffset?.dy ?? 0),
       0,
