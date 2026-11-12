@@ -22,23 +22,28 @@ class GutterWidget extends StatelessWidget {
     required this.codeController,
     required this.style,
     required this.scrollController,
+    this.padding = EdgeInsets.zero,
   });
 
   final CodeController codeController;
   final GutterStyle style;
   final ScrollController? scrollController;
 
+  /// Vertical padding shared with the code editing area.
+  final EdgeInsets padding;
+
   @override
   Widget build(BuildContext context) {
-    // Apply the background to the complete visible gutter,
-    // not just the area occupied by the line numbers.
     return Container(
       color: style.background,
       child: SingleChildScrollView(
         controller: scrollController,
-        child: AnimatedBuilder(
-          animation: codeController,
-          builder: _buildOnChange,
+        child: Padding(
+          padding: padding,
+          child: AnimatedBuilder(
+            animation: codeController,
+            builder: _buildOnChange,
+          ),
         ),
       ),
     );
@@ -79,8 +84,8 @@ class GutterWidget extends StatelessWidget {
     }
 
     return Container(
-      width: style.showLineNumbers ? gutterWidth : null,
       color: style.background,
+      width: style.showLineNumbers ? gutterWidth : null,
       child: Table(
         columnWidths: {
           _lineNumberColumn: const FlexColumnWidth(),
