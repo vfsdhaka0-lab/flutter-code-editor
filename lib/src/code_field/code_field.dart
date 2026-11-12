@@ -22,6 +22,7 @@ import 'default_styles.dart';
 import 'js_workarounds/js_workarounds.dart';
 
 const double _codeRightPadding = 12.0;
+const double _codeVerticalPadding = 12.0;
 
 final _shortcuts = <ShortcutActivator, Intent>{
   // Copy
@@ -197,7 +198,11 @@ class CodeField extends StatefulWidget {
     this.textStyle,
     this.smartDashesType = SmartDashesType.disabled,
     this.smartQuotesType = SmartQuotesType.disabled,
-    this.padding = const EdgeInsets.only(right: _codeRightPadding),
+    this.padding = const EdgeInsets.only(
+      top: _codeVerticalPadding,
+      right: _codeRightPadding,
+      bottom: _codeVerticalPadding,
+    ),
     GutterStyle? gutterStyle,
     this.enabled,
     this.readOnly = false,
@@ -222,7 +227,6 @@ class CodeField extends StatefulWidget {
 }
 
 class _CodeFieldState extends State<CodeField> {
-  // Add a controller.
   LinkedScrollControllerGroup? _controllers;
   ScrollController? _numberScroll;
   ScrollController? _codeScroll;
@@ -274,8 +278,6 @@ class _CodeFieldState extends State<CodeField> {
 
     widget.controller.searchController.codeFieldFocusNode = _focusNode;
 
-    // Workaround for disabling spellchecks in FireFox.
-    // https://github.com/akvelon/flutter-code-editor/issues/197
     disableSpellCheckIfWeb();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -359,8 +361,6 @@ class _CodeFieldState extends State<CodeField> {
           return;
         }
 
-        // For some reason _codeFieldKey.currentContext is null in tests,
-        // so check first.
         final context = _codeFieldKey.currentContext;
 
         if (context != null) {
@@ -374,7 +374,6 @@ class _CodeFieldState extends State<CodeField> {
   }
 
   void _onTextChanged() {
-    // Rebuild line numbers.
     final str = widget.controller.text.split('\n');
     final buf = <String>[];
 
@@ -382,7 +381,6 @@ class _CodeFieldState extends State<CodeField> {
       buf.add((k + 1).toString());
     }
 
-    // Find longest line.
     longestLine = '';
 
     widget.controller.text.split('\n').forEach((line) {
@@ -407,7 +405,6 @@ class _CodeFieldState extends State<CodeField> {
     rebuild();
   }
 
-  // Wrap the codeField in a horizontal scrollView.
   Widget _wrapInScrollView(
     Widget codeField,
     TextStyle textStyle,
@@ -450,7 +447,6 @@ class _CodeFieldState extends State<CodeField> {
 
   @override
   Widget build(BuildContext context) {
-    // Default color scheme.
     const rootKey = 'root';
 
     final themeData = Theme.of(context);
@@ -487,7 +483,9 @@ class _CodeFieldState extends State<CodeField> {
       decoration: InputDecoration(
         isCollapsed: true,
         contentPadding: EdgeInsets.only(
+          top: widget.padding.top,
           right: widget.padding.right,
+          bottom: widget.padding.bottom,
         ),
         disabledBorder: InputBorder.none,
         border: InputBorder.none,
@@ -507,7 +505,6 @@ class _CodeFieldState extends State<CodeField> {
       ),
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          // Control horizontal scrolling.
           return _wrapInScrollView(
             codeField,
             textStyle,
@@ -566,6 +563,10 @@ class _CodeFieldState extends State<CodeField> {
       codeController: widget.controller,
       style: gutterStyle,
       scrollController: _numberScroll,
+      padding: EdgeInsets.only(
+        top: widget.padding.top,
+        bottom: widget.padding.bottom,
+      ),
     );
   }
 
