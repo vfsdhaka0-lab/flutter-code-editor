@@ -1,3 +1,4 @@
+
 // TODO(alexeyinkin): Remove when dropping support for Flutter < 3.10, https://github.com/akvelon/flutter-code-editor/issues/245
 // ignore_for_file: unnecessary_non_null_assertion
 
@@ -28,14 +29,11 @@ class GutterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: SingleChildScrollView(
-        controller: scrollController,
-        child: AnimatedBuilder(
-          animation: codeController,
-          builder: _buildOnChange,
-        ),
+    return SingleChildScrollView(
+      controller: scrollController,
+      child: AnimatedBuilder(
+        animation: codeController,
+        builder: _buildOnChange,
       ),
     );
   }
@@ -69,13 +67,13 @@ class GutterWidget extends StatelessWidget {
     if (style.showErrors) {
       _fillIssues(tableRows);
     }
+
     if (style.showFoldingHandles) {
       _fillFoldToggles(tableRows);
     }
 
     return Container(
       color: style.background,
-padding: EdgeInsets.only(right: style.margin),
       width: style.showLineNumbers ? gutterWidth : null,
       child: Table(
         columnWidths: {
@@ -114,9 +112,11 @@ padding: EdgeInsets.only(right: style.margin),
       }
 
       final lineIndex = _lineIndexToTableRowIndex(issue.line);
+
       if (lineIndex == null || lineIndex >= tableRows.length) {
         continue;
       }
+
       tableRows[lineIndex].children![_issueColumn] = GutterErrorWidget(
         issue,
         style.errorPopupTextStyle ??
@@ -130,6 +130,7 @@ padding: EdgeInsets.only(right: style.margin),
 
     for (final block in code.foldableBlocks) {
       final lineIndex = _lineIndexToTableRowIndex(block.firstLine);
+
       if (lineIndex == null) {
         continue;
       }
@@ -149,6 +150,7 @@ padding: EdgeInsets.only(right: style.margin),
     // but should be folded because they were folded before becoming invalid.
     for (final block in code.foldedBlocks) {
       final lineIndex = _lineIndexToTableRowIndex(block.firstLine);
+
       if (lineIndex == null || lineIndex >= tableRows.length) {
         continue;
       }
