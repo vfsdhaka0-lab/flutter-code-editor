@@ -1,5 +1,5 @@
-// TODO(alexeyinkin): Remove when dropping support for Flutter < 3.10,
-// https://github.com/akvelon/flutter-code-editor/issues/245
+
+// TODO(alexeyinkin): Remove when dropping support for Flutter < 3.10, https://github.com/akvelon/flutter-code-editor/issues/245
 // ignore_for_file: unnecessary_non_null_assertion
 
 import 'package:flutter/material.dart';
@@ -28,21 +28,19 @@ class GutterWidget extends StatelessWidget {
   final GutterStyle style;
   final ScrollController? scrollController;
 
-  /// Vertical padding shared with the code editing area.
+  /// Vertical spacing inside the gutter scroll area.
   final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: style.background,
-      child: SingleChildScrollView(
-        controller: scrollController,
-        child: Padding(
-          padding: padding,
-          child: AnimatedBuilder(
-            animation: codeController,
-            builder: _buildOnChange,
-          ),
+    return SingleChildScrollView(
+      controller: scrollController,
+      child: Container(
+        color: style.background,
+        padding: padding,
+        child: AnimatedBuilder(
+          animation: codeController,
+          builder: _buildOnChange,
         ),
       ),
     );
@@ -64,10 +62,10 @@ class GutterWidget extends StatelessWidget {
     final tableRows = List.generate(
       code.hiddenLineRanges.visibleLineNumbers.length,
       (i) => TableRow(
-        children: [
-          const SizedBox(),
-          const SizedBox(),
-          const SizedBox(),
+        children: const [
+          SizedBox(),
+          SizedBox(),
+          SizedBox(),
         ],
       ),
     );
@@ -103,9 +101,7 @@ class GutterWidget extends StatelessWidget {
     for (final i in code.hiddenLineRanges.visibleLineNumbers) {
       final lineIndex = _lineIndexToTableRowIndex(i);
 
-      if (lineIndex == null) {
-        continue;
-      }
+      if (lineIndex == null) continue;
 
       tableRows[lineIndex].children![_lineNumberColumn] = Text(
         style.showLineNumbers ? '${i + 1}' : ' ',
@@ -142,11 +138,10 @@ class GutterWidget extends StatelessWidget {
     final code = codeController.code;
 
     for (final block in code.foldableBlocks) {
-      final lineIndex = _lineIndexToTableRowIndex(block.firstLine);
+      final lineIndex =
+          _lineIndexToTableRowIndex(block.firstLine);
 
-      if (lineIndex == null) {
-        continue;
-      }
+      if (lineIndex == null) continue;
 
       final isFolded = code.foldedBlocks.contains(block);
 
@@ -160,10 +155,9 @@ class GutterWidget extends StatelessWidget {
       );
     }
 
-    // Preserve folded blocks that are no longer considered valid
-    // foldable blocks.
     for (final block in code.foldedBlocks) {
-      final lineIndex = _lineIndexToTableRowIndex(block.firstLine);
+      final lineIndex =
+          _lineIndexToTableRowIndex(block.firstLine);
 
       if (lineIndex == null || lineIndex >= tableRows.length) {
         continue;
