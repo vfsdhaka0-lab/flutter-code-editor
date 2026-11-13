@@ -378,6 +378,7 @@ class _CodeFieldState extends State<CodeField> {
     Widget codeField,
     TextStyle textStyle,
     double minWidth,
+    double maxHeight,
   ) {
     final intrinsic = IntrinsicWidth(
       child: Column(
@@ -407,7 +408,10 @@ class _CodeFieldState extends State<CodeField> {
       ),
       scrollDirection: Axis.horizontal,
       controller: _horizontalCodeScroll,
-      child: intrinsic,
+      child: SizedBox(
+        height: maxHeight,
+        child: intrinsic,
+      ),
     );
   }
 
@@ -480,6 +484,7 @@ class _CodeFieldState extends State<CodeField> {
             codeField,
             textStyle,
             constraints.maxWidth,
+            constraints.maxHeight,
           );
         },
       ),
