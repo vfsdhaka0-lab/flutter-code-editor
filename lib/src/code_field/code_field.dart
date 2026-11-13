@@ -381,7 +381,7 @@ class _CodeFieldState extends State<CodeField> {
   ) {
     final intrinsic = IntrinsicWidth(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ConstrainedBox(
