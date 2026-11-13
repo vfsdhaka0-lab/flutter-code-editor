@@ -90,7 +90,7 @@ class GutterWidget extends StatelessWidget {
       color: style.background,
       padding: EdgeInsets.zero,
       child: Table(
-        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        defaultVerticalAlignment: TableCellVerticalAlignment.top,
         columnWidths: {
           _lineNumberColumn:
               FixedColumnWidth(lineNumberColumnWidth),
