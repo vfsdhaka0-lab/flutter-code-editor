@@ -37,7 +37,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.insert,
   ): CopySelectionTextIntent.copy,
-
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.keyX,
@@ -56,7 +55,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
   ): const CopySelectionTextIntent.cut(
     SelectionChangedCause.keyboard,
   ),
-
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.keyZ,
@@ -69,7 +67,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
   ): const UndoTextIntent(
     SelectionChangedCause.keyboard,
   ),
-
   LogicalKeySet(
     LogicalKeyboardKey.shift,
     LogicalKeyboardKey.control,
@@ -84,7 +81,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
   ): const RedoTextIntent(
     SelectionChangedCause.keyboard,
   ),
-
   LogicalKeySet(
     LogicalKeyboardKey.tab,
   ): const IndentIntent(),
@@ -92,7 +88,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
     LogicalKeyboardKey.shift,
     LogicalKeyboardKey.tab,
   ): const OutdentIntent(),
-
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.slash,
@@ -101,7 +96,6 @@ final _shortcuts = <ShortcutActivator, Intent>{
     LogicalKeyboardKey.slash,
     meta: true,
   ): const CommentUncommentIntent(),
-
   LogicalKeySet(
     LogicalKeyboardKey.control,
     LogicalKeyboardKey.keyF,
@@ -110,15 +104,12 @@ final _shortcuts = <ShortcutActivator, Intent>{
     LogicalKeyboardKey.keyF,
     meta: true,
   ): const SearchIntent(),
-
   LogicalKeySet(
     LogicalKeyboardKey.escape,
   ): const DismissIntent(),
-
   LogicalKeySet(
     LogicalKeyboardKey.enter,
   ): const EnterKeyIntent(),
-
   LogicalKeySet(
     LogicalKeyboardKey.tab,
   ): const TabKeyIntent(),
@@ -358,13 +349,6 @@ class _CodeFieldState extends State<CodeField> {
   }
 
   void _onTextChanged() {
-    final str = widget.controller.text.split('\n');
-    final buf = <String>[];
-
-    for (var k = 0; k < str.length; k++) {
-      buf.add((k + 1).toString());
-    }
-
     longestLine = '';
 
     widget.controller.text.split('\n').forEach((line) {
@@ -390,8 +374,6 @@ class _CodeFieldState extends State<CodeField> {
     rebuild();
   }
 
-  // Horizontal scrolling keeps only the configured right padding.
-  // No left, top, or bottom padding is added.
   Widget _wrapInScrollView(
     Widget codeField,
     TextStyle textStyle,
@@ -455,13 +437,8 @@ class _CodeFieldState extends State<CodeField> {
 
     final codeField = TextField(
       focusNode: _focusNode,
-
-      // Prevent Flutter from adding automatic scroll padding.
       scrollPadding: EdgeInsets.zero,
-
-      // Keep the code aligned at the top of the editing area.
       textAlignVertical: TextAlignVertical.top,
-
       style: textStyle,
       smartDashesType: widget.smartDashesType,
       smartQuotesType: widget.smartQuotesType,
@@ -471,7 +448,6 @@ class _CodeFieldState extends State<CodeField> {
       maxLines: widget.maxLines,
       expands: widget.expands,
       scrollController: _codeScroll,
-
       decoration: const InputDecoration(
         isCollapsed: true,
         contentPadding: EdgeInsets.zero,
@@ -482,7 +458,6 @@ class _CodeFieldState extends State<CodeField> {
         errorBorder: InputBorder.none,
         focusedErrorBorder: InputBorder.none,
       ),
-
       cursorColor: widget.cursorColor ??
           defaultTextStyle.color,
       autocorrect: false,
@@ -517,14 +492,11 @@ class _CodeFieldState extends State<CodeField> {
         decoration: widget.decoration,
         color: _backgroundCol,
         key: _codeFieldKey,
-
-        // No outer padding or margin.
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (widget.gutterStyle.showGutter)
               _buildGutter(),
-
             Expanded(
               key: _editorKey,
               child: editingField,
@@ -542,7 +514,6 @@ class _CodeFieldState extends State<CodeField> {
         widget.gutterStyle.textStyle?.color ??
             textStyle.color?.withOpacity(.5);
 
-    // Match the gutter's line height to the code's line height.
     final lineNumberTextStyle =
         (widget.gutterStyle.textStyle ?? textStyle)
             .copyWith(
@@ -568,8 +539,6 @@ class _CodeFieldState extends State<CodeField> {
       codeController: widget.controller,
       style: gutterStyle,
       scrollController: _numberScroll,
-
-      // No padding around the gutter.
       padding: EdgeInsets.zero,
     );
   }
