@@ -255,12 +255,14 @@ class _CodeFieldState extends State<CodeField> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      final context = _codeFieldKey.currentContext;
-      if (context == null || context.size == null) return;
+      final fieldContext = _codeFieldKey.currentContext;
+      if (fieldContext == null || fieldContext.size == null) {
+        return;
+      }
 
       windowSize = Size(
-        context.size!.width,
-        context.size!.height,
+        fieldContext.size!.width,
+        fieldContext.size!.height,
       );
     });
 
@@ -291,6 +293,8 @@ class _CodeFieldState extends State<CodeField> {
     );
 
     _suggestionsPopup?.remove();
+    _suggestionsPopup = null;
+
     _searchPopup?.remove();
     _searchPopup = null;
 
@@ -340,12 +344,14 @@ class _CodeFieldState extends State<CodeField> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
 
-        final context = _codeFieldKey.currentContext;
-        if (context == null || context.size == null) return;
+        final fieldContext = _codeFieldKey.currentContext;
+        if (fieldContext == null || fieldContext.size == null) {
+          return;
+        }
 
         windowSize = Size(
-          context.size!.width,
-          context.size!.height,
+          fieldContext.size!.width,
+          fieldContext.size!.height,
         );
       });
     });
@@ -384,6 +390,8 @@ class _CodeFieldState extends State<CodeField> {
     rebuild();
   }
 
+  // Horizontal scrolling keeps only the configured right padding.
+  // No left, top, or bottom padding is added.
   Widget _wrapInScrollView(
     Widget codeField,
     TextStyle textStyle,
@@ -447,7 +455,13 @@ class _CodeFieldState extends State<CodeField> {
 
     final codeField = TextField(
       focusNode: _focusNode,
+
+      // Prevent Flutter from adding automatic scroll padding.
       scrollPadding: EdgeInsets.zero,
+
+      // Keep the code aligned at the top of the editing area.
+      textAlignVertical: TextAlignVertical.top,
+
       style: textStyle,
       smartDashesType: widget.smartDashesType,
       smartQuotesType: widget.smartQuotesType,
@@ -457,6 +471,7 @@ class _CodeFieldState extends State<CodeField> {
       maxLines: widget.maxLines,
       expands: widget.expands,
       scrollController: _codeScroll,
+
       decoration: const InputDecoration(
         isCollapsed: true,
         contentPadding: EdgeInsets.zero,
@@ -467,6 +482,7 @@ class _CodeFieldState extends State<CodeField> {
         errorBorder: InputBorder.none,
         focusedErrorBorder: InputBorder.none,
       ),
+
       cursorColor: widget.cursorColor ??
           defaultTextStyle.color,
       autocorrect: false,
@@ -501,6 +517,8 @@ class _CodeFieldState extends State<CodeField> {
         decoration: widget.decoration,
         color: _backgroundCol,
         key: _codeFieldKey,
+
+        // No outer padding or margin.
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -524,12 +542,14 @@ class _CodeFieldState extends State<CodeField> {
         widget.gutterStyle.textStyle?.color ??
             textStyle.color?.withOpacity(.5);
 
+    // Match the gutter's line height to the code's line height.
     final lineNumberTextStyle =
         (widget.gutterStyle.textStyle ?? textStyle)
             .copyWith(
       color: lineNumberColor,
       fontFamily: textStyle.fontFamily,
       fontSize: lineNumberSize,
+      height: textStyle.height,
     );
 
     final gutterStyle = widget.gutterStyle.copyWith(
@@ -548,6 +568,8 @@ class _CodeFieldState extends State<CodeField> {
       codeController: widget.controller,
       style: gutterStyle,
       scrollController: _numberScroll,
+
+      // No padding around the gutter.
       padding: EdgeInsets.zero,
     );
   }
@@ -556,6 +578,7 @@ class _CodeFieldState extends State<CodeField> {
     final textPainter = _getTextPainter(
       widget.controller.text,
     );
+
     final caretHeight = _getCaretHeight(textPainter);
 
     final leftOffset = _getPopupLeftOffset(textPainter);
@@ -570,11 +593,14 @@ class _CodeFieldState extends State<CodeField> {
             caretHeight +
             Sizes.caretPadding);
 
+    if (!mounted) return;
+
     setState(() {
       _normalPopupOffset = Offset(
         leftOffset,
         normalTopOffset,
       );
+
       _flippedPopupOffset = Offset(
         leftOffset,
         flippedTopOffset,
